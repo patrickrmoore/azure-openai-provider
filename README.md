@@ -2,6 +2,8 @@
 
 Vercel AI Provider for running Large Language Models using Azure OpenAI
 
+> **Note: This module currently supports chat models and text inputs. Completion and embeddings is not currently implemented.**
+
 > **Note: This module is under development and may contain errors and frequent incompatible changes.**
 >
 > All releases will be of type MAJOR following the 0.MAJOR.MINOR scheme. Only bugs and non-breaking updates will be released as MINOR.
@@ -26,7 +28,7 @@ import { createAzureOpenAI } from 'azure-openai-provider';
 
 const azureOpenAI = createAzureOpenAI({
   resourceName: 'YourAzureOpenAIResourceName',
-  // or baseURL if using a proxy. baseURL: https://apigateway.acme.com
+  // or baseURL if using a proxy. baseURL: 'https://apigateway.acme.com'
 });
 
 await streamText({
@@ -38,11 +40,15 @@ await streamText({
 
 You can use the following optional settings to customize the Azure OpenAI provider instance:
 
+- **resourceName** _string_
+
+  Required if baseURL is not specified. The provider will format the base url to be `https://${resourceName}.azure.openai.com`
+
 - **baseURL** _string_
 
   Use a different URL prefix for API calls, e.g. to use proxy servers.
   If baseURL is passed it will override the `resourceName` property.
-  Note: `/openai/deployments/${this.deploymentName}` will still be appended to the end of the baseURL
+  Note: the provider will append `/openai/deployments/${this.deploymentName}` to the end of the baseURL
   ex. `baseURL: "https://apigateway.acme.com"`
 
 - **headers** _Record<string,string>_
@@ -60,10 +66,12 @@ Change `convert-to-openai-chat-message.ts` to map user messages as {role: "user"
 
 ## Models
 
-The first argument is your deployment name, e.g. `gpt-4-turbo-deployment`.
+The first argument is you the openai model id. This is not currently utilized but could be in the future.
+
+The second argument is your azure deployment name, e.g. `gpt-4-turbo-deployment`.
 
 ```ts
-const model = azureOpenAI('gpt-4-turbo-deployment');
+const model = azureOpenAI('gpt-4-1106-preview', 'gpt-4-turbo-deployment');
 ```
 
 ## Examples
