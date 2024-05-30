@@ -1,73 +1,113 @@
-# Turborepo Design System starter with Changesets
+# azure-openai-provider
 
-This is an official React design system starter powered by Turborepo. Versioning and package publishing is handled by [Changesets](https://github.com/changesets/changesets) and fully automated with GitHub Actions.
+Vercel AI Provider for running Large Language Models using Azure OpenAI
 
-## Using this example
+> **Note: This module is under development and may contain errors and frequent incompatible changes.**
+>
+> All releases will be of type MAJOR following the 0.MAJOR.MINOR scheme. Only bugs and model updates will be released as MINOR.
+> Please read the [Tested models and capabilities](#tested-models-and-capabilities) section to know about the features
+> implemented in this provider.
 
-Run the following command:
+## Installation
 
-```sh
-npx create-turbo@latest -e with-changesets
+The Azure OpenAI provider is available in the `azure-openai-provider` module. You can install it with
+
+```bash
+npm i ollama-ai-provider
 ```
 
-## What's inside?
+## Provider Instance
 
-This Turborepo includes the following:
+Unlike other providers, there is no default instance and you must create your own instance:
 
-### Apps and Packages
+```ts
+import { createAzureOpenAI } from "azure-openai-provider";
 
-- `docs`: A placeholder documentation site powered by [Next.js](https://nextjs.org/)
-- `@acme/core`: core React components
-- `@acme/utils`: shared React utilities
-- `@acme/tsconfig`: shared `tsconfig.json`s used throughout the monorepo
-- `@acme/eslint-config`: ESLint preset
-
-Each package and app is 100% [TypeScript](https://www.typescriptlang.org/).
-
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Useful commands
-
-- `yarn build` - Build all packages and the docs site
-- `yarn dev` - Develop all packages and the docs site
-- `yarn lint` - Lint all packages
-- `yarn changeset` - Generate a changeset
-- `yarn clean` - Clean up all `node_modules` and `dist` folders (runs each package's clean script)
-
-### Changing the npm organization scope
-
-The npm organization scope for this design system starter is `@acme`. To change this, it's a bit manual at the moment, but you'll need to do the following:
-
-- Rename folders in `packages/*` to replace `acme` with your desired scope
-- Search and replace `acme` with your desired scope
-- Re-run `yarn install`
-
-## Versioning and Publishing packages
-
-Package publishing has been configured using [Changesets](https://github.com/changesets/changesets). Please review their [documentation](https://github.com/changesets/changesets#documentation) to familiarize yourself with the workflow.
-
-This example comes with automated npm releases setup in a [GitHub Action](https://github.com/changesets/action). To get this working, you will need to create an `NPM_TOKEN` and `GITHUB_TOKEN` in your repository settings. You should also install the [Changesets bot](https://github.com/apps/changeset-bot) on your GitHub repository as well.
-
-For more information about this automation, refer to the official [changesets documentation](https://github.com/changesets/changesets/blob/main/docs/automating-changesets.md)
-
-### npm
-
-If you want to publish package to the public npm registry and make them publicly available, this is already setup.
-
-To publish packages to a private npm organization scope, **remove** the following from each of the `package.json`'s
-
-```diff
-- "publishConfig": {
--  "access": "public"
-- },
+const azureOpenAI = createAzureOpenAI({
+  baseURL: "https://yourinstancename.azure.openai.com",
+});
 ```
 
-### GitHub Package Registry
+Required settings:
+baseURL
 
-See [Working with the npm registry](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-npm-registry#publishing-a-package-using-publishconfig-in-the-packagejson-file)
+You can use the following optional settings to customize the Ollama provider instance:
+
+- **baseURL** _string_
+
+  Use a different URL prefix for API calls, e.g. to use proxy servers.
+  The default prefix is `http://localhost:11434/api`.
+
+- **headers** _Record<string,string>_
+
+  Custom headers to include in the requests.
+
+## About
+
+This package is a slightly modified version of the official OpenAI provider by Vercel. It has been tested against chat
+
+Summary of current changes:
+
+## Models
+
+The first argument is your deployment name, e.g. `gpt-4-turbo-deployment`.
+
+```ts
+const model = azureOpenAI("gpt-4-turbo-deployment");
+```
+
+## Examples
+
+Inside the `examples` folder, you will find some example projects to see how the provider works. Each folder
+has its own README with the usage description.
+
+## Tested models and capabilities
+
+This provider is capable of generating and streaming text and objects. Object generation may fail depending
+on the model used and the schema used.
+
+At least it has been tested with the following features:
+
+| Image input        | Object generation  | Tool usage | Tool streaming |
+| ------------------ | ------------------ | ---------- | -------------- |
+| :white_check_mark: | :white_check_mark: | :warning:  | :warning:      |
+
+### Image input
+
+> This feature is currently broken. Feel free to open a PR to add this capability, but be aware of this: azure link explaining how tool calling doesn't work with image inputs
+
+### Object generation
+
+> This feature is unstable with some models
+
+Some models are better than others. Also, there is a bug in Ollama that sometimes causes the JSON generation to be slow or
+end with an error. In my tests, I detected this behavior with llama3 and phi3 models more than others like
+`openhermes` and `mistral`, but you can experiment with them too.
+
+More info about the bugs:
+
+- https://github.com/ollama/ollama/issues/3851
+- https://github.com/ollama/ollama/pull/3785
+
+Remember that Ollama and this module are free software, so be patient.
+
+### Tool usage (no streaming)
+
+> This feature is not completed and unstable
+
+Ollama does not support tooling, so this provider simulates tool usage with prompt injection. That means that
+this feature can fail very often. Again, it depends on the model you use, and it is very related to the object
+generation issues explained in the previous section.
+
+I recommend you use `openhermes` and `mistral` or experiment with your preferred models.
+
+### Tool streaming
+
+> This feature is not completed and unstable
+
+Again, since Ollama does not support tooling, we should simulate the feature. In this case, the problem is worse than
+in non-streaming tool usage. We don't have the full response before knowing if the model has detected function calling.
+We are waiting for the first characters before sending the deltas to detect if we are in a tool call flow.
+
+Obviously, this is very buggy and should be used with caution. Right now, you cannot use it in chats and with more than
+one tool.
