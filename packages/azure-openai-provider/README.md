@@ -27,6 +27,7 @@ Unlike other providers, there is no default instance and you must create your ow
 import { createAzureOpenAI } from 'azure-openai-provider';
 
 const azureOpenAI = createAzureOpenAI({
+  apiVersion: "2024-02-01",
   resourceName: 'YourAzureOpenAIResourceName',
   // or baseURL if using a proxy. baseURL: 'https://apigateway.acme.com'
 });
@@ -38,11 +39,17 @@ await streamText({
 
 ```
 
-You can use the following optional settings to customize the Azure OpenAI provider instance:
+### Required Settings
+
+- **apiVersion** _string_
+
+The Azure API Version to use. [See here](https://learn.microsoft.com/en-us/azure/ai-services/openai/reference#chat-completions)
 
 - **resourceName** _string_
 
-  Required if baseURL is not specified. The provider will format the base url to be `https://${resourceName}.azure.openai.com`
+  The name of your Azure OpenAI resource. Required if baseURL is not provided. If resourceName is passed, the provider will format the baseURL to be `https://${resourceName}.azure.openai.com`
+
+### Optional Settings
 
 - **baseURL** _string_
 
