@@ -1,6 +1,6 @@
 import { generateObject } from 'ai';
 import { z } from 'zod';
-import { gpt4 } from '../../services/azure-openai-instance';
+import { gpt4 } from '../../azure-openai-instance';
 import { NextResponse } from 'next/server';
 import { type NextRequest } from 'next/server';
 
