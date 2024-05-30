@@ -1,5 +1,11 @@
 # azure-openai-provider
 
+## 0.1.1
+
+### Patch Changes
+
+- 4995569: add readme
+
 ## 0.1.0
 
 ### Minor Changes
