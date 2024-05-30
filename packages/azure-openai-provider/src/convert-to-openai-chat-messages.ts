@@ -1,4 +1,7 @@
-import { LanguageModelV1Prompt } from '@ai-sdk/provider';
+import {
+  LanguageModelV1Prompt,
+  UnsupportedFunctionalityError,
+} from '@ai-sdk/provider';
 import { convertUint8ArrayToBase64 } from '@ai-sdk/provider-utils';
 import { OpenAIChatPrompt } from './openai-chat-prompt';
 
@@ -15,29 +18,26 @@ export function convertToOpenAIChatMessages(
       }
 
       case 'user': {
-        messages.push({
-          role: 'user',
-          content: content.map(part => {
-            switch (part.type) {
-              case 'text': {
-                return { type: 'text', text: part.text };
-              }
-              case 'image': {
-                return {
-                  type: 'image_url',
-                  image_url: {
-                    url:
-                      part.image instanceof URL
-                        ? part.image.toString()
-                        : `data:${
-                            part.mimeType ?? 'image/jpeg'
-                          };base64,${convertUint8ArrayToBase64(part.image)}`,
-                  },
-                };
-              }
+        let text = '';
+
+        // map user message to {role: "user", content: string} due to errors in Azure OpenAI
+        // this will break vision models
+
+        for (const part of content) {
+          switch (part.type) {
+            case 'text': {
+              text += part.text;
+              break;
             }
-          }),
-        });
+            case 'image': {
+              throw new UnsupportedFunctionalityError({
+                functionality: 'images',
+              });
+            }
+          }
+        }
+
+        messages.push({ role: 'user', content: text });
         break;
       }
 

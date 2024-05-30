@@ -23,7 +23,9 @@ import { openaiFailedResponseHandler } from './openai-error';
 
 type OpenAIChatConfig = {
   provider: string;
-  baseURL: string;
+  baseURL?: string;
+  resourceName?: string;
+  apiVersion: string;
   compatibility: 'strict' | 'compatible';
   headers: () => Record<string, string | undefined>;
 };
@@ -33,18 +35,28 @@ export class OpenAIChatLanguageModel implements LanguageModelV1 {
   readonly defaultObjectGenerationMode = 'tool';
 
   readonly modelId: OpenAIChatModelId;
+  readonly deploymentName: string;
   readonly settings: OpenAIChatSettings;
 
   private readonly config: OpenAIChatConfig;
 
   constructor(
+    deploymentName: string,
     modelId: OpenAIChatModelId,
     settings: OpenAIChatSettings,
     config: OpenAIChatConfig,
   ) {
+    this.deploymentName = deploymentName;
     this.modelId = modelId;
     this.settings = settings;
     this.config = config;
+  }
+
+  get baseURL() {
+    const baseURL =
+      this.config.baseURL ??
+      `https://${this.config.resourceName}.openai.azure.com`;
+    return `${baseURL}/openai/deployments/${this.deploymentName}`;
   }
 
   get provider(): string {
@@ -76,10 +88,10 @@ export class OpenAIChatLanguageModel implements LanguageModelV1 {
         typeof this.settings.logprobs === 'number'
           ? this.settings.logprobs
           : typeof this.settings.logprobs === 'boolean'
-          ? this.settings.logprobs
-            ? 0
-            : undefined
-          : undefined,
+            ? this.settings.logprobs
+              ? 0
+              : undefined
+            : undefined,
       user: this.settings.user,
 
       // standardized settings:
@@ -142,7 +154,7 @@ export class OpenAIChatLanguageModel implements LanguageModelV1 {
     const args = this.getArgs(options);
 
     const { responseHeaders, value: response } = await postJsonToApi({
-      url: `${this.config.baseURL}/chat/completions`,
+      url: `${this.baseURL}/chat/completions?api-version=${this.config.apiVersion}`,
       headers: this.config.headers(),
       body: args,
       failedResponseHandler: openaiFailedResponseHandler,
@@ -181,7 +193,7 @@ export class OpenAIChatLanguageModel implements LanguageModelV1 {
     const args = this.getArgs(options);
 
     const { responseHeaders, value: response } = await postJsonToApi({
-      url: `${this.config.baseURL}/chat/completions`,
+      url: `${this.baseURL}/chat/completions?api-version=${this.config.apiVersion}`,
       headers: this.config.headers(),
       body: {
         ...args,
@@ -410,7 +422,7 @@ const openAIChatResponseSchema = z.object({
   }),
 });
 
-// limited version of the schema, focussed on what is needed for the implementation
+// limited version of the schema, focused on what is needed for the implementation
 // this approach limits breakages when the API changes and increases efficiency
 const openaiChatChunkSchema = z.object({
   choices: z.array(

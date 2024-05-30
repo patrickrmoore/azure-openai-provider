@@ -2,7 +2,7 @@
   "private": true,
   "scripts": {
     "build": "turbo build",
-    "dev": "turbo dev",
+    "dev": "dotenv -- turbo dev",
     "lint": "turbo lint",
     "clean": "turbo clean && rm -rf node_modules",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
@@ -11,8 +11,9 @@
     "release": "turbo build --filter=docs^... && changeset publish"
   },
   "devDependencies": {
-    "@repo/eslint-config": "*",
     "@changesets/cli": "^2.27.1",
+    "@repo/eslint-config": "*",
+    "dotenv-cli": "^7.4.2",
     "eslint": "^8.57.0",
     "prettier": "^3.2.5",
     "turbo": "latest"

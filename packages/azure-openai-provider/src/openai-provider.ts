@@ -14,10 +14,7 @@ import {
 
 export interface OpenAIProvider {
   (
-    modelId: 'gpt-3.5-turbo-instruct',
-    settings?: OpenAICompletionSettings,
-  ): OpenAICompletionLanguageModel;
-  (
+    deploymentName: string,
     modelId: OpenAIChatModelId,
     settings?: OpenAIChatSettings,
   ): OpenAIChatLanguageModel;
@@ -49,14 +46,14 @@ Creates a model for text embeddings.
 
 export interface OpenAIProviderSettings {
   /**
-Base URL for the OpenAI API calls.
+Optional base URL for custom DNS or proxies
      */
   baseURL?: string;
 
   /**
-@deprecated Use `baseURL` instead.
-     */
-  baseUrl?: string;
+   The Azure API Version to use [see here](https://learn.microsoft.com/en-us/azure/ai-services/openai/reference#chat-completions)
+   */
+  apiVersion: string;
 
   /**
 API key for authenticating requests.
@@ -64,14 +61,9 @@ API key for authenticating requests.
   apiKey?: string;
 
   /**
-OpenAI Organization.
-     */
-  organization?: string;
-
-  /**
-OpenAI project.
-     */
-  project?: string;
+   The name of the Azure OpenAI resource
+   */
+  resourceName?: string;
 
   /**
 Custom headers to include in the requests.
@@ -89,62 +81,60 @@ information such as streamOptions are not being sent. Defaults to 'compatible'.
 /**
 Create an OpenAI provider instance.
  */
-export function createOpenAI(
-  options: OpenAIProviderSettings = {},
+export function createAzureOpenAI(
+  options: OpenAIProviderSettings,
 ): OpenAIProvider {
-  const baseURL =
-    withoutTrailingSlash(options.baseURL ?? options.baseUrl) ??
-    'https://api.openai.com/v1';
+  const baseURL = withoutTrailingSlash(options.baseURL);
 
   // we default to compatible, because strict breaks providers like Groq:
   const compatibility = options.compatibility ?? 'compatible';
-
   const getHeaders = () => ({
-    Authorization: `Bearer ${loadApiKey({
+    'api-key': loadApiKey({
       apiKey: options.apiKey,
-      environmentVariableName: 'OPENAI_API_KEY',
-      description: 'OpenAI',
-    })}`,
-    'OpenAI-Organization': options.organization,
-    'OpenAI-Project': options.project,
+      environmentVariableName: 'AZURE_OPENAI_API_KEY',
+      description: 'Azure OpenAI',
+    }),
     ...options.headers,
   });
 
   const createChatModel = (
+    deploymentName: string,
     modelId: OpenAIChatModelId,
     settings: OpenAIChatSettings = {},
   ) =>
-    new OpenAIChatLanguageModel(modelId, settings, {
+    new OpenAIChatLanguageModel(deploymentName, modelId, settings, {
       provider: 'openai.chat',
-      baseURL,
+      apiVersion: options.apiVersion,
+      resourceName: options.resourceName,
       headers: getHeaders,
       compatibility,
     });
 
-  const createCompletionModel = (
-    modelId: OpenAICompletionModelId,
-    settings: OpenAICompletionSettings = {},
-  ) =>
-    new OpenAICompletionLanguageModel(modelId, settings, {
-      provider: 'openai.completion',
-      baseURL,
-      headers: getHeaders,
-      compatibility,
-    });
+  // const createCompletionModel = (
+  //   modelId: OpenAICompletionModelId,
+  //   settings: OpenAICompletionSettings = {},
+  // ) =>
+  //   new OpenAICompletionLanguageModel(modelId, settings, {
+  //     provider: 'openai.completion',
+  //     baseURL,
+  //     headers: getHeaders,
+  //     compatibility,
+  //   });
 
-  const createEmbeddingModel = (
-    modelId: OpenAIEmbeddingModelId,
-    settings: OpenAIEmbeddingSettings = {},
-  ) =>
-    new OpenAIEmbeddingModel(modelId, settings, {
-      provider: 'openai.embedding',
-      baseURL,
-      headers: getHeaders,
-    });
+  // const createEmbeddingModel = (
+  //   modelId: OpenAIEmbeddingModelId,
+  //   settings: OpenAIEmbeddingSettings = {},
+  // ) =>
+  //   new OpenAIEmbeddingModel(modelId, settings, {
+  //     provider: 'openai.embedding',
+  //     baseURL,
+  //     headers: getHeaders,
+  //   });
 
   const provider = function (
-    modelId: OpenAIChatModelId | OpenAICompletionModelId,
-    settings?: OpenAIChatSettings | OpenAICompletionSettings,
+    deploymentName: string,
+    modelId: OpenAIChatModelId, // | OpenAICompletionModelId,
+    settings?: OpenAIChatSettings, // | OpenAICompletionSettings,
   ) {
     if (new.target) {
       throw new Error(
@@ -152,26 +142,19 @@ export function createOpenAI(
       );
     }
 
-    if (modelId === 'gpt-3.5-turbo-instruct') {
-      return createCompletionModel(
-        modelId,
-        settings as OpenAICompletionSettings,
-      );
-    }
+    // if (modelId === 'gpt-3.5-turbo-instruct') {
+    //   return createCompletionModel(
+    //     modelId,
+    //     settings as OpenAICompletionSettings,
+    //   );
+    // }
 
-    return createChatModel(modelId, settings as OpenAIChatSettings);
+    return createChatModel(deploymentName, modelId, settings);
   };
 
   provider.chat = createChatModel;
-  provider.completion = createCompletionModel;
-  provider.embedding = createEmbeddingModel;
+  // provider.completion = createCompletionModel;
+  // provider.embedding = createEmbeddingModel;
 
   return provider as OpenAIProvider;
 }
-
-/**
-Default OpenAI provider instance. It uses 'strict' compatibility mode.
- */
-export const openai = createOpenAI({
-  compatibility: 'strict', // strict for OpenAI API
-});
