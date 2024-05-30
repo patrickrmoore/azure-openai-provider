@@ -41,13 +41,13 @@ export class OpenAIChatLanguageModel implements LanguageModelV1 {
   private readonly config: OpenAIChatConfig;
 
   constructor(
-    deploymentName: string,
     modelId: OpenAIChatModelId,
+    deploymentName: string,
     settings: OpenAIChatSettings,
     config: OpenAIChatConfig,
   ) {
-    this.deploymentName = deploymentName;
     this.modelId = modelId;
+    this.deploymentName = deploymentName;
     this.settings = settings;
     this.config = config;
   }

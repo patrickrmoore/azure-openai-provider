@@ -14,8 +14,8 @@ import {
 
 export interface OpenAIProvider {
   (
-    deploymentName: string,
     modelId: OpenAIChatModelId,
+    deploymentName: string,
     settings?: OpenAIChatSettings,
   ): OpenAIChatLanguageModel;
 
@@ -98,11 +98,11 @@ export function createAzureOpenAI(
   });
 
   const createChatModel = (
-    deploymentName: string,
     modelId: OpenAIChatModelId,
+    deploymentName: string,
     settings: OpenAIChatSettings = {},
   ) =>
-    new OpenAIChatLanguageModel(deploymentName, modelId, settings, {
+    new OpenAIChatLanguageModel(modelId, deploymentName, settings, {
       provider: 'openai.chat',
       apiVersion: options.apiVersion,
       resourceName: options.resourceName,
@@ -132,8 +132,8 @@ export function createAzureOpenAI(
   //   });
 
   const provider = function (
-    deploymentName: string,
     modelId: OpenAIChatModelId, // | OpenAICompletionModelId,
+    deploymentName: string,
     settings?: OpenAIChatSettings, // | OpenAICompletionSettings,
   ) {
     if (new.target) {
@@ -149,7 +149,7 @@ export function createAzureOpenAI(
     //   );
     // }
 
-    return createChatModel(deploymentName, modelId, settings);
+    return createChatModel(modelId, deploymentName, settings);
   };
 
   provider.chat = createChatModel;
