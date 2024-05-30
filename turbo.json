@@ -1,6 +1,12 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "globalDependencies": ["**/.env.*local"],
+  "globalEnv": [
+    "AZURE_OPENAI_RESOURCE_NAME",
+    "AZURE_OPENAI_API_KEY",
+    "AZURE_OPENAI_DEPLOYMENT_NAME"
+  ],
+  "globalDotEnv": [".env", ".env.local"],
   "pipeline": {
     "build": {
       "outputs": ["dist/**", ".next/**", "!.next/cache/**"],
@@ -13,7 +19,13 @@
     "lint": {},
     "dev": {
       "cache": false,
-      "persistent": true
+      "persistent": true,
+      "dotEnv": [
+        ".env.development.local",
+        ".env.local",
+        ".env.development",
+        ".env"
+      ]
     },
     "clean": {
       "cache": false
