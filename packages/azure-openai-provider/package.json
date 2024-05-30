@@ -48,13 +48,13 @@
   "publishConfig": {
     "access": "public"
   },
-  "homepage": "https://sdk.vercel.ai/docs",
+  "homepage": "https://github.com/patrickrmoore/azure-openai-provider",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/vercel/ai.git"
+    "url": "git+https://github.com/patrickrmoore/azure-openai-provider.git"
   },
   "bugs": {
-    "url": "https://github.com/vercel/ai/issues"
+    "url": "https://github.com/patrickrmoore/azure-openai-provider/issues"
   },
   "keywords": [
     "ai"
