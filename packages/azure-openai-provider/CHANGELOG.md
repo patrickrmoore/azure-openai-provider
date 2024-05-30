@@ -1,5 +1,11 @@
 # azure-openai-provider
 
+## 0.1.2
+
+### Patch Changes
+
+- ef1c1c1: force publish
+
 ## 0.1.1
 
 ### Patch Changes
