@@ -3,6 +3,7 @@
   "changelog": "@changesets/cli/changelog",
   "commit": false,
   "fixed": [],
+  "baseBranch": "main",
   "linked": [],
   "access": "public",
   "updateInternalDependencies": "patch",
