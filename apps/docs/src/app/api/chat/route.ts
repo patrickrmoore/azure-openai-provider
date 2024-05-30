@@ -1,5 +1,5 @@
 import { streamText } from 'ai';
-import { gpt4 } from '../../services/azure-openai-instance';
+import { gpt4 } from '../../azure-openai-instance';
 
 export async function POST(req: Request) {
   const { messages } = await req.json();
