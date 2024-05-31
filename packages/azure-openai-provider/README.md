@@ -49,6 +49,9 @@ The Azure API Version to use. [See here](https://learn.microsoft.com/en-us/azure
 
   The name of your Azure OpenAI resource. Required if baseURL is not provided. If resourceName is passed, the provider will format the baseURL to be `https://${resourceName}.azure.openai.com`
 
+- **apiKey** \_string
+  Your AzureOpenAI API key. Can also be passed via the `AZURE_OPENAI_API_KEY` environment variable. **EntraID is not currently supported**
+
 ### Optional Settings
 
 - **baseURL** _string_

@@ -56,7 +56,7 @@ Optional base URL for custom DNS or proxies
   apiVersion: string;
 
   /**
-API key for authenticating requests.
+API key for authenticating requests. Can also be passed via the `AZURE_OPENAI_API_KEY` environment variable.
      */
   apiKey?: string;
 
@@ -106,6 +106,7 @@ export function createAzureOpenAI(
       provider: 'openai.chat',
       apiVersion: options.apiVersion,
       resourceName: options.resourceName,
+      baseURL: baseURL,
       headers: getHeaders,
       compatibility,
     });
